@@ -5,6 +5,9 @@ import jp.co.axa.apidemo.exception.NotFoundException;
 import jp.co.axa.apidemo.repositories.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.util.List;
 
@@ -23,6 +26,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 		return employees;
 	}
 
+	@Cacheable(cacheNames = "employees", key="#employeeId")
 	public Employee getEmployee(Long employeeId) {
 		return employeeRepository.findById(employeeId).orElseThrow(() -> new NotFoundException(employeeId));
 
@@ -32,12 +36,14 @@ public class EmployeeServiceImpl implements EmployeeService {
 		return employeeRepository.save(employee);
 	}
 
+	@CacheEvict(cacheNames = "employees", key = "#employeeId")
 	public void deleteEmployee(Long employeeId) {
 		employeeRepository.findById(employeeId).orElseThrow(() -> new NotFoundException(employeeId));
 
 		employeeRepository.deleteById(employeeId);
 	}
 
+	@CachePut(cacheNames = "employees", key="#employeeId")
 	public Employee updateEmployee(Long employeeId, Employee employee) {
 		employeeRepository.findById(employeeId)
           .orElseThrow(() -> new NotFoundException(employeeId));
